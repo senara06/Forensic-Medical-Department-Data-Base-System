@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investigations - Forensic Medical DB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            <li><a href="examinations.html" class="nav-link"><i data-feather="clipboard"></i> Examinations</a></li>
+            <li><a href="investigations.html" class="nav-link active"><i data-feather="search"></i> Investigations</a></li>
+            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            <li><a href="evidence.html" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            <li><a href="court_reports.html" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
+            <li><a href="audit.html" class="nav-link"><i data-feather="lock"></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Investigations & Lab Results</h1>
+            <div class="user-profile">
+                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
+                <div class="avatar">W</div>
+            </div>
+        </header>
+
+        <!-- Role-based view toggle -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+            <button id="btn-doctor" onclick="showView('doctor')" class="btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                <i data-feather="user" style="width:15px;"></i> Doctor View — Request
+            </button>
+            <button id="btn-lab" onclick="showView('lab')" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                <i data-feather="thermometer" style="width:15px;"></i> Lab Staff View — Enter Results
+            </button>
+        </div>
+
+        <!-- DOCTOR VIEW: Request new investigation -->
+        <div id="view-doctor">
+            <div class="form-card">
+                <div class="form-title"><i data-feather="plus-circle"></i> Request New Investigation</div>
+                <form action="#">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Select Case</label>
+                            <select class="form-control">
+                                <option>#CAS-2026-001 — John Doe</option>
+                                <option>#CAS-2026-002 — Jane Smith</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Investigation Type</label>
+                            <select class="form-control">
+                                <option>X-Ray</option>
+                                <option>CT Scan</option>
+                                <option>Blood Analysis</option>
+                                <option>DNA Analysis</option>
+                                <option>Toxicology Screen</option>
+                                <option>Histology</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Request Date</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Clinical Reason for Request</label>
+                            <textarea class="form-control" placeholder="e.g. Suspected fracture of the left ulna based on clinical findings..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-primary"><i data-feather="send" style="width:16px;"></i> Send Request to Lab</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Doctor's outgoing requests table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">My Outgoing Investigation Requests</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Inv. ID</th>
+                            <th>Case</th>
+                            <th>Type</th>
+                            <th>Requested On</th>
+                            <th>Status</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#INV-7701</td>
+                            <td>#CAS-2026-001</td>
+                            <td>X-Ray</td>
+                            <td>2026-07-18</td>
+                            <td><span class="badge processing">In Progress</span></td>
+                            <td style="color: var(--text-secondary); font-style: italic;">Awaiting result...</td>
+                        </tr>
+                        <tr>
+                            <td>#INV-7699</td>
+                            <td>#CAS-2026-002</td>
+                            <td>Toxicology Screen</td>
+                            <td>2026-07-17</td>
+                            <td><span class="badge completed">Complete</span></td>
+                            <td><a href="#" style="color:var(--accent-blue); display: flex; align-items: center; gap: 0.3rem;"><i data-feather="download" style="width:14px;"></i> Download Report</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- LAB STAFF VIEW: Enter results (hidden by default) -->
+        <div id="view-lab" style="display: none;">
+            <div class="table-container" style="margin-bottom: 2rem;">
+                <div class="table-header">
+                    <div class="table-title">Pending Investigation Queue</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Inv. ID</th>
+                            <th>Case</th>
+                            <th>Type</th>
+                            <th>Requested By</th>
+                            <th>Requested On</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#INV-7701</td>
+                            <td>#CAS-2026-001</td>
+                            <td>X-Ray</td>
+                            <td>Dr. Wickramasinghe</td>
+                            <td>2026-07-18</td>
+                            <td>
+                                <button onclick="showResultForm('INV-7701')" class="btn-primary" style="font-size:0.8rem; padding: 0.4rem 0.8rem;">
+                                    <i data-feather="edit-2" style="width:14px;"></i> Enter Result
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Enter Lab Result Form (shown on clicking Enter Result) -->
+            <div id="result-form" style="display: none;">
+                <div class="form-card" style="border: 1px solid rgba(14, 165, 233, 0.3);">
+                    <div class="form-title" style="color: var(--accent-blue);">
+                        <i data-feather="edit-3"></i> Entering Result for <span id="inv-id-label">#INV-7701</span>
+                    </div>
+                    <form action="#">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Lab Test Date</label>
+                                <input type="date" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Performed By (Lab Staff)</label>
+                                <input type="text" class="form-control" value="Lab Tech K. Fernando" readonly style="opacity: 0.7;">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Findings / Results Summary</label>
+                                <textarea class="form-control" placeholder="e.g. Fracture of the mid-shaft of the left ulna observed..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Upload Lab Report (PDF / Image)</label>
+                                <input type="file" class="form-control" style="padding-top: 0.55rem;">
+                            </div>
+                            <div class="form-group">
+                                <label>Investigation Status</label>
+                                <select class="form-control">
+                                    <option>Completed</option>
+                                    <option>Inconclusive — Further Testing Required</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('result-form').style.display='none'">Cancel</button>
+                            <button type="button" class="btn-primary"><i data-feather="check-circle" style="width:16px;"></i> Submit Result to Doctor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        feather.replace();
+
+        function showView(view) {
+            document.getElementById('view-doctor').style.display = view === 'doctor' ? 'block' : 'none';
+            document.getElementById('view-lab').style.display = view === 'lab' ? 'block' : 'none';
+            document.getElementById('btn-doctor').className = view === 'doctor' ? 'btn-primary' : 'btn-secondary';
+            document.getElementById('btn-lab').className = view === 'lab' ? 'btn-primary' : 'btn-secondary';
+            document.getElementById('btn-doctor').style.fontSize = '0.85rem';
+            document.getElementById('btn-lab').style.fontSize = '0.85rem';
+            document.getElementById('btn-doctor').style.padding = '0.5rem 1rem';
+            document.getElementById('btn-lab').style.padding = '0.5rem 1rem';
+        }
+
+        function showResultForm(invId) {
+            document.getElementById('result-form').style.display = 'block';
+            document.getElementById('inv-id-label').textContent = '#' + invId;
+            document.getElementById('result-form').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
