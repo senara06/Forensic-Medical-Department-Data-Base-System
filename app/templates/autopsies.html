@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postmortems - Forensic Medical DB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i data-feather="shield"></i> ForensicDB
+        </div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            <li><a href="autopsies.html" class="nav-link active"><i data-feather="activity"></i> Postmortems</a></li>
+            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Postmortem Module</h1>
+            <div class="user-profile">
+                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
+                <div class="avatar">W</div>
+            </div>
+        </header>
+
+        <div class="form-card">
+            <div class="form-title"><i data-feather="activity"></i> Record Postmortem Details</div>
+            <form action="#">
+                <div class="form-grid">
+                    <div class="form-group"><label>Link to Case</label><select class="form-control"><option>#CAS-2026-003 (Unknown Male)</option><option>#CAS-2026-002 (Jane Smith)</option></select></div>
+                    <div class="form-group"><label>Type of Death</label><select class="form-control"><option>Natural</option><option>Accidental</option><option>Suicidal</option><option>Homicidal</option></select></div>
+                    <div class="form-group"><label>Date/Time of Death</label><input type="datetime-local" class="form-control"></div>
+                    <div class="form-group"><label>Autopsy Date</label><input type="date" class="form-control"></div>
+                    <div class="form-group full-width"><label>Cause of Death (COD)</label><textarea class="form-control" placeholder="e.g., Multiple injuries due to blunt force trauma..."></textarea></div>
+                    <div class="form-group full-width"><label>Additional Findings / Remarks</label><textarea class="form-control" placeholder="Enter findings from PMR dictation here..."></textarea></div>
+                    <div class="form-group"><label>Upload Scanned PMR / Audio File</label><input type="file" class="form-control" style="padding-top: 0.55rem;"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary">Save as Draft</button>
+                    <button type="button" class="btn-primary"><i data-feather="check-circle" style="width: 16px;"></i> Finalize Autopsy Record</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>feather.replace()</script>
+</body>
+</html>

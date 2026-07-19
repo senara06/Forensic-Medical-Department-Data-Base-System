@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Cases - Forensic Medical DB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i data-feather="shield"></i> ForensicDB
+        </div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="cases.html" class="nav-link active"><i data-feather="folder"></i> Clinical Cases</a></li>
+            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>Clinical Case Management</h1>
+            <div class="user-profile">
+                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
+                <div class="avatar">W</div>
+            </div>
+        </header>
+
+        <div class="form-card">
+            <div class="form-title"><i data-feather="folder-plus"></i> Open New Clinical Case</div>
+            <form action="#">
+                <div class="form-grid">
+                    <div class="form-group"><label>Select Patient</label><select class="form-control"><option>John Doe (981234567V)</option><option>Jane Smith (856723451V)</option></select></div>
+                    <div class="form-group"><label>Case Type</label><select class="form-control"><option>Clinical - Assault</option><option>Clinical - Trauma</option><option>Clinical - Abuse</option></select></div>
+                    <div class="form-group"><label>Incident Date & Time</label><input type="datetime-local" class="form-control"></div>
+                    <div class="form-group"><label>Incident Location</label><input type="text" class="form-control" placeholder="e.g. Kandy City Center"></div>
+                    <div class="form-group"><label>Police Station</label><input type="text" class="form-control" placeholder="e.g. Kandy HQ"></div>
+                    <div class="form-group"><label>Police Reference No.</label><input type="text" class="form-control" placeholder="e.g. PS-3059"></div>
+                    <div class="form-group full-width"><label>Assigned Medical Officer</label><select class="form-control"><option>Dr. Chathula Wickramasinghe</option><option>Dr. N. Perera</option></select></div>
+                </div>
+                <div class="form-actions">
+                    <button type="reset" class="btn-secondary">Clear</button>
+                    <button type="button" class="btn-primary"><i data-feather="file-text" style="width: 16px;"></i> Create Case & Initiate MLEF</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Case Directory -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">Active Clinical Cases</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Police Ref</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#CAS-2026-001</td>
+                        <td>John Doe</td>
+                        <td>2026-07-19</td>
+                        <td>PS-3059</td>
+                        <td><span class="badge pending">MLEF Pending</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>feather.replace()</script>
+</body>
+</html>
