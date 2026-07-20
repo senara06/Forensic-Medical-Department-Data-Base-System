@@ -35,12 +35,10 @@ def role_required(*roles):
         def decorated_view(*args, **kwargs):
             if 'user_id' not in session:
                 return redirect(url_for('login'))
-            if session.get('role') not in roles and 'Administrator' not in roles:
-                # If Administrator is allowed, and they are Administrator, let them in.
-                # Actually, wait, let's just check if their role is in the allowed roles.
-                if session.get('role') not in roles and session.get('role') != 'Administrator':
-                    flash("You do not have permission to access this page.", "danger")
-                    return redirect(url_for('dashboard'))
+            user_role = session.get('role')
+            if user_role not in roles and user_role != 'Administrator':
+                flash("You do not have permission to access this page.", "danger")
+                return redirect(url_for('dashboard'))
             return fn(*args, **kwargs)
         return decorated_view
     return wrapper
