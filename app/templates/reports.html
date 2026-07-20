@@ -6,48 +6,87 @@
     <title>Generate Reports - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
-        <!-- Re-using sidebar from before, shortened for brevity here but identical in structure -->
         <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="evidence.html" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="court_reports.html" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
-            <li style="margin-top: 2rem;"><a href="reports.html" class="nav-link active"><i data-feather="pie-chart"></i> Analytics</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link active"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
     <main class="main-content">
         <header class="header">
             <h1>Analytics & Statistical Reports</h1>
-            <div class="user-profile"><span class="user-name">Dr. Wickramasinghe</span><div class="avatar">W</div></div>
+            <div class="user-profile">
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
+            </div>
         </header>
 
-        <div class="form-card">
-            <div class="form-title"><i data-feather="filter"></i> Report Configuration</div>
-            <form action="#">
-                <div class="form-grid">
-                    <div class="form-group"><label>Report Type</label><select class="form-control"><option>Monthly Statistics (All)</option><option>Clinical Cases Only</option><option>Autopsy Cases Only</option></select></div>
-                    <div class="form-group"><label>Start Date</label><input type="date" class="form-control"></div>
-                    <div class="form-group"><label>End Date</label><input type="date" class="form-control"></div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-primary"><i data-feather="download" style="width: 16px;"></i> Export to PDF</button>
-                    <button type="button" class="btn-primary" style="background-color: var(--success);"><i data-feather="file" style="width: 16px;"></i> Export to Excel</button>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Placeholder for a generated report view -->
-        <div class="chart-section" style="text-align: center; color: var(--text-secondary); padding: 4rem;">
-            <i data-feather="bar-chart-2" style="width: 48px; height: 48px; opacity: 0.5; margin-bottom: 1rem;"></i>
-            <p>Configure and generate a report above to view statistics.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Monthly Case Statistics (View: CasesByMonth) -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title"><i data-feather="bar-chart-2"></i> Monthly Case Aggregates (View: CasesByMonth)</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month / Year</th>
+                        <th>Case Type Category</th>
+                        <th>Total Registered Cases</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in cases_by_month %}
+                    <tr>
+                        <td>{{ row.month_year }}</td>
+                        <td>{{ row.case_type }}</td>
+                        <td><span class="badge blue">{{ row.total_cases }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--text-secondary);">No monthly data generated yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </main>
     <script>feather.replace()</script>

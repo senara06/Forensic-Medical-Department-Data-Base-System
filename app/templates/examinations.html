@@ -6,22 +6,38 @@
     <title>Examinations - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
         <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="examinations.html" class="nav-link active"><i data-feather="clipboard"></i> Examinations</a></li>
-            <li><a href="investigations.html" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="evidence.html" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="court_reports.html" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
-            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
-            <li><a href="audit.html" class="nav-link"><i data-feather="lock"></i> Audit Log</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link active"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -29,110 +45,62 @@
         <header class="header">
             <h1>Patient Examinations</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
 
-        <!-- Quick stats -->
-        <div class="dashboard-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
-            <div class="stat-card blue">
-                <div class="stat-title">Examinations Today</div>
-                <div class="stat-value">7</div>
-            </div>
-            <div class="stat-card rose">
-                <div class="stat-title">Pending MLEF Generation</div>
-                <div class="stat-value">3</div>
-            </div>
-            <div class="stat-card emerald">
-                <div class="stat-title">Completed This Week</div>
-                <div class="stat-value">31</div>
-            </div>
-        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- New Examination Form -->
         <div class="form-card">
             <div class="form-title"><i data-feather="clipboard"></i> Record New Examination</div>
-            <form action="#">
+            <form action="{{ url_for('examinations') }}" method="POST">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Select Case</label>
-                        <select class="form-control">
-                            <option>#CAS-2026-001 — John Doe (Assault)</option>
-                            <option>#CAS-2026-002 — Jane Smith (RTA)</option>
+                        <label>Select Case *</label>
+                        <select name="case_id" class="form-control" required>
+                            <option value="">-- Select Active Case --</option>
+                            {% for c in active_cases %}
+                            <option value="{{ c.case_id }}">#CAS-{{ c.case_id }} (Police Ref: {{ c.police_ref_no or 'N/A' }})</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Examination Date & Time</label>
-                        <input type="datetime-local" class="form-control">
+                        <label>Examination Date & Time *</label>
+                        <input type="datetime-local" name="exam_datetime" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Ward / BHT No.</label>
-                        <input type="text" class="form-control" placeholder="e.g. Ward 5 / BHT-00281">
+                        <input type="text" name="ward_bht" class="form-control" placeholder="e.g. Ward 5 / BHT-00281">
                     </div>
                     <div class="form-group">
-                        <label>Examination Type</label>
-                        <select class="form-control">
-                            <option>Initial Examination</option>
-                            <option>Follow-up Examination</option>
-                            <option>Age Estimation</option>
-                            <option>Sexual Assault Examination</option>
+                        <label>Examination Type *</label>
+                        <select name="exam_type" class="form-control" required>
+                            <option value="Initial Examination">Initial Examination</option>
+                            <option value="Follow-up Examination">Follow-up Examination</option>
+                            <option value="Age Estimation">Age Estimation</option>
+                            <option value="Sexual Assault Examination">Sexual Assault Examination</option>
                         </select>
                     </div>
 
-                    <!-- Injury Findings Section -->
                     <div class="form-group full-width">
-                        <label>Injury Findings</label>
-                        <div style="background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.25rem; margin-top: 0.25rem;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                <div class="form-group" style="margin: 0;">
-                                    <label style="font-size: 0.75rem;">Injury Type</label>
-                                    <select class="form-control">
-                                        <option>Bruise / Contusion</option>
-                                        <option>Laceration</option>
-                                        <option>Fracture</option>
-                                        <option>Burn</option>
-                                        <option>Abrasion</option>
-                                    </select>
-                                </div>
-                                <div class="form-group" style="margin: 0;">
-                                    <label style="font-size: 0.75rem;">Body Location</label>
-                                    <input type="text" class="form-control" placeholder="e.g. Left forearm">
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin: 0;">
-                                <label style="font-size: 0.75rem;">Description</label>
-                                <input type="text" class="form-control" placeholder="e.g. 4cm bruise, yellowish-brown in colour">
-                            </div>
-                            <button type="button" class="btn-secondary" style="margin-top: 0.75rem; font-size: 0.8rem; padding: 0.4rem 0.9rem;">
-                                <i data-feather="plus" style="width: 14px;"></i> Add Another Injury
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>General Clinical Notes</label>
-                        <textarea class="form-control" placeholder="Overall clinical observations, demeanor, relevant history..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Photographs Taken?</label>
-                        <select class="form-control">
-                            <option>Yes — Uploaded to Case Document</option>
-                            <option>No</option>
-                            <option>Pending</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Upload Photos (optional)</label>
-                        <input type="file" class="form-control" multiple style="padding-top: 0.55rem;">
+                        <label>General Clinical Notes / Findings</label>
+                        <textarea name="clinical_notes" class="form-control" rows="4" placeholder="Overall clinical observations, injuries observed, demeanor, relevant history..."></textarea>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary">Save as Draft</button>
-                    <button type="button" class="btn-primary" style="background: var(--success);"><i data-feather="file-plus" style="width: 16px;"></i> Save & Generate MLEF</button>
-                    <button type="button" class="btn-primary"><i data-feather="save" style="width: 16px;"></i> Save Examination</button>
+                    <button type="reset" class="btn-secondary">Clear</button>
+                    <button type="submit" class="btn-primary"><i data-feather="save" style="width: 16px;"></i> Save Examination Record</button>
                 </div>
             </form>
         </div>
@@ -141,52 +109,31 @@
         <div class="table-container">
             <div class="table-header">
                 <div class="table-title">Examination Records</div>
-                <div style="display:flex; gap:0.5rem;">
-                    <input type="text" class="form-control" placeholder="Search by Case ID..." style="padding: 0.5rem; font-size: 0.85rem;">
-                    <button class="btn-primary" style="padding: 0.5rem;"><i data-feather="search" style="width:16px;"></i></button>
-                </div>
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>Exam ID</th>
-                        <th>Case ID</th>
-                        <th>Patient</th>
-                        <th>Date</th>
-                        <th>Injuries Found</th>
-                        <th>MLEF</th>
-                        <th>Action</th>
+                        <th>Police Ref No.</th>
+                        <th>Exam Type</th>
+                        <th>Exam Date</th>
+                        <th>Examiner Name</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for e in examinations %}
                     <tr>
-                        <td>#EXM-4401</td>
-                        <td>#CAS-2026-001</td>
-                        <td>
-                            <div class="patient-cell">
-                                <div class="patient-avatar">JD</div>
-                                <span>John Doe</span>
-                            </div>
-                        </td>
-                        <td>2026-07-19</td>
-                        <td>Bruise (L. arm), Laceration (forehead)</td>
-                        <td><span class="badge pending">Pending</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">View</a></td>
+                        <td>#EXM-{{ e.exam_id }}</td>
+                        <td>{{ e.police_ref_no or 'N/A' }}</td>
+                        <td>{{ e.exam_type }}</td>
+                        <td>{{ e.exam_datetime.strftime('%Y-%m-%d %H:%M') if e.exam_datetime else 'N/A' }}</td>
+                        <td>{{ e.examiner_name }}</td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>#EXM-4400</td>
-                        <td>#CAS-2026-002</td>
-                        <td>
-                            <div class="patient-cell">
-                                <div class="patient-avatar">JS</div>
-                                <span>Jane Smith</span>
-                            </div>
-                        </td>
-                        <td>2026-07-18</td>
-                        <td>Multiple fractures</td>
-                        <td><span class="badge completed">Issued</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">View</a></td>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No examination records found.</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

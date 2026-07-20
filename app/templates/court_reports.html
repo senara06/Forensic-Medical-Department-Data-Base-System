@@ -6,7 +6,7 @@
     <title>Court Reports - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
@@ -14,13 +14,32 @@
             <i data-feather="shield"></i> ForensicDB
         </div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="evidence.html" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="court_reports.html" class="nav-link active"><i data-feather="file-text"></i> Reports</a></li>
-            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link active"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -28,65 +47,81 @@
         <header class="header">
             <h1>Medico-Legal Court Reports</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
 
-        <div class="dashboard-grid">
-            <div class="stat-card">
-                <div class="stat-title">Reports Sent This Month</div>
-                <div class="stat-value">45</div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Pending MLEFs Section (View: PendingMLEFs) -->
+        <div class="table-container" style="margin-bottom: 2.5rem;">
+            <div class="table-header">
+                <div class="table-title" style="color: var(--warning);"><i data-feather="clock" style="width:18px;"></i> Cases Awaiting MLEF Generation (View: PendingMLEFs)</div>
             </div>
-            <div class="stat-card rose">
-                <div class="stat-title">MLEFs Pending Submission</div>
-                <div class="stat-value">12</div>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Patient Name</th>
+                        <th>Police Ref No.</th>
+                        <th>Date Opened</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pmlef in pending_mlefs %}
+                    <tr>
+                        <td>#CAS-{{ pmlef.case_id }}</td>
+                        <td>{{ pmlef.first_name }} {{ pmlef.last_name }}</td>
+                        <td>{{ pmlef.police_ref_no or 'N/A' }}</td>
+                        <td>{{ pmlef.opened_at.strftime('%Y-%m-%d %H:%M') if pmlef.opened_at else 'N/A' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-secondary);">No pending MLEFs. All reports are up to date!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
+        <!-- Court Reports Directory Table -->
         <div class="table-container">
             <div class="table-header">
-                <div class="table-title">Court Reports Directory</div>
-                <div style="display:flex; gap:0.5rem;">
-                    <select class="form-control" style="padding: 0.5rem; font-size: 0.85rem;"><option>All Types</option><option>MLEF</option><option>MLR</option><option>PMR</option></select>
-                </div>
+                <div class="table-title">Court Submission Reports Directory</div>
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>Report ID</th>
-                        <th>Case ID</th>
+                        <th>Police Ref No.</th>
                         <th>Report Type</th>
-                        <th>Court / Police Ref</th>
+                        <th>Submission Date</th>
                         <th>Status</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for r in court_reports %}
                     <tr>
-                        <td>#RPT-5012</td>
-                        <td>#CAS-2026-001</td>
-                        <td>MLEF</td>
-                        <td>PS-3059</td>
-                        <td><span class="badge pending">Draft</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">Edit</a></td>
+                        <td>#RPT-{{ r.report_id }}</td>
+                        <td>{{ r.police_ref_no or 'N/A' }}</td>
+                        <td>{{ r.report_type }}</td>
+                        <td>{{ r.submission_date }}</td>
+                        <td><span class="badge {% if r.report_status == 'Submitted' %}completed{% else %}pending{% endif %}">{{ r.report_status }}</span></td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>#RPT-5011</td>
-                        <td>#CAS-2026-002</td>
-                        <td>PMR (Postmortem)</td>
-                        <td>Kandy Magistrate</td>
-                        <td><span class="badge completed">Submitted</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">Download PDF</a></td>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No court reports recorded yet.</td>
                     </tr>
-                    <tr>
-                        <td>#RPT-5010</td>
-                        <td>#CAS-2026-003</td>
-                        <td>MLR</td>
-                        <td>B.S. Jayalath</td>
-                        <td><span class="badge completed">Submitted</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">Download PDF</a></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

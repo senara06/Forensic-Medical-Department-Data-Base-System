@@ -6,22 +6,38 @@
     <title>Investigations - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
         <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="examinations.html" class="nav-link"><i data-feather="clipboard"></i> Examinations</a></li>
-            <li><a href="investigations.html" class="nav-link active"><i data-feather="search"></i> Investigations</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="evidence.html" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="court_reports.html" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
-            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
-            <li><a href="audit.html" class="nav-link"><i data-feather="lock"></i> Audit Log</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link active"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -29,15 +45,25 @@
         <header class="header">
             <h1>Investigations & Lab Results</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Role-based view toggle -->
         <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
             <button id="btn-doctor" onclick="showView('doctor')" class="btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
-                <i data-feather="user" style="width:15px;"></i> Doctor View — Request
+                <i data-feather="user" style="width:15px;"></i> Doctor View — Request Lab Test
             </button>
             <button id="btn-lab" onclick="showView('lab')" class="btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
                 <i data-feather="thermometer" style="width:15px;"></i> Lab Staff View — Enter Results
@@ -48,80 +74,44 @@
         <div id="view-doctor">
             <div class="form-card">
                 <div class="form-title"><i data-feather="plus-circle"></i> Request New Investigation</div>
-                <form action="#">
+                <form action="{{ url_for('investigations') }}" method="POST">
+                    <input type="hidden" name="action" value="request_test">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Select Case</label>
-                            <select class="form-control">
-                                <option>#CAS-2026-001 — John Doe</option>
-                                <option>#CAS-2026-002 — Jane Smith</option>
+                            <label>Select Case *</label>
+                            <select name="case_id" class="form-control" required>
+                                <option value="">-- Select Active Case --</option>
+                                {% for c in active_cases %}
+                                <option value="{{ c.case_id }}">#CAS-{{ c.case_id }} (Police Ref: {{ c.police_ref_no or 'N/A' }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Investigation Type</label>
-                            <select class="form-control">
-                                <option>X-Ray</option>
-                                <option>CT Scan</option>
-                                <option>Blood Analysis</option>
-                                <option>DNA Analysis</option>
-                                <option>Toxicology Screen</option>
-                                <option>Histology</option>
+                            <label>Investigation Type *</label>
+                            <select name="inv_type_id" class="form-control" required>
+                                <option value="">-- Select Type --</option>
+                                {% for t in inv_types %}
+                                <option value="{{ t.inv_type_id }}">{{ t.type_name }} ({{ t.department }})</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Request Date</label>
-                            <input type="date" class="form-control">
+                            <label>Request Date *</label>
+                            <input type="date" name="request_date" class="form-control" required>
                         </div>
                         <div class="form-group full-width">
                             <label>Clinical Reason for Request</label>
-                            <textarea class="form-control" placeholder="e.g. Suspected fracture of the left ulna based on clinical findings..."></textarea>
+                            <textarea name="clinical_reason" class="form-control" placeholder="e.g. Suspected fracture of the left ulna based on clinical findings..."></textarea>
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="btn-primary"><i data-feather="send" style="width:16px;"></i> Send Request to Lab</button>
+                        <button type="submit" class="btn-primary"><i data-feather="send" style="width:16px;"></i> Send Request to Lab</button>
                     </div>
                 </form>
             </div>
-
-            <!-- Doctor's outgoing requests table -->
-            <div class="table-container">
-                <div class="table-header">
-                    <div class="table-title">My Outgoing Investigation Requests</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Inv. ID</th>
-                            <th>Case</th>
-                            <th>Type</th>
-                            <th>Requested On</th>
-                            <th>Status</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#INV-7701</td>
-                            <td>#CAS-2026-001</td>
-                            <td>X-Ray</td>
-                            <td>2026-07-18</td>
-                            <td><span class="badge processing">In Progress</span></td>
-                            <td style="color: var(--text-secondary); font-style: italic;">Awaiting result...</td>
-                        </tr>
-                        <tr>
-                            <td>#INV-7699</td>
-                            <td>#CAS-2026-002</td>
-                            <td>Toxicology Screen</td>
-                            <td>2026-07-17</td>
-                            <td><span class="badge completed">Complete</span></td>
-                            <td><a href="#" style="color:var(--accent-blue); display: flex; align-items: center; gap: 0.3rem;"><i data-feather="download" style="width:14px;"></i> Download Report</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
-        <!-- LAB STAFF VIEW: Enter results (hidden by default) -->
+        <!-- LAB STAFF VIEW & QUEUE -->
         <div id="view-lab" style="display: none;">
             <div class="table-container" style="margin-bottom: 2rem;">
                 <div class="table-header">
@@ -131,65 +121,65 @@
                     <thead>
                         <tr>
                             <th>Inv. ID</th>
-                            <th>Case</th>
+                            <th>Case ID</th>
                             <th>Type</th>
-                            <th>Requested By</th>
-                            <th>Requested On</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for inv in pending_investigations %}
                         <tr>
-                            <td>#INV-7701</td>
-                            <td>#CAS-2026-001</td>
-                            <td>X-Ray</td>
-                            <td>Dr. Wickramasinghe</td>
-                            <td>2026-07-18</td>
+                            <td>#INV-{{ inv.inv_id }}</td>
+                            <td>#CAS-{{ inv.case_id }}</td>
+                            <td>{{ inv.type_name }}</td>
+                            <td>{{ inv.request_date }}</td>
+                            <td><span class="badge pending">{{ inv.inv_status }}</span></td>
                             <td>
-                                <button onclick="showResultForm('INV-7701')" class="btn-primary" style="font-size:0.8rem; padding: 0.4rem 0.8rem;">
+                                <button onclick="showResultForm('{{ inv.inv_id }}')" class="btn-primary" style="font-size:0.8rem; padding: 0.4rem 0.8rem;">
                                     <i data-feather="edit-2" style="width:14px;"></i> Enter Result
                                 </button>
                             </td>
                         </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-secondary);">No pending investigation requests found.</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <!-- Enter Lab Result Form (shown on clicking Enter Result) -->
+            <!-- Enter Lab Result Form -->
             <div id="result-form" style="display: none;">
                 <div class="form-card" style="border: 1px solid rgba(14, 165, 233, 0.3);">
                     <div class="form-title" style="color: var(--accent-blue);">
-                        <i data-feather="edit-3"></i> Entering Result for <span id="inv-id-label">#INV-7701</span>
+                        <i data-feather="edit-3"></i> Entering Result for <span id="inv-id-label">#INV</span>
                     </div>
-                    <form action="#">
+                    <form action="{{ url_for('investigations') }}" method="POST">
+                        <input type="hidden" name="action" value="enter_result">
+                        <input type="hidden" name="inv_id" id="inv_id_input">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>Lab Test Date</label>
-                                <input type="date" class="form-control">
+                                <label>Lab Test Date *</label>
+                                <input type="date" name="test_date" class="form-control" required>
                             </div>
                             <div class="form-group">
-                                <label>Performed By (Lab Staff)</label>
-                                <input type="text" class="form-control" value="Lab Tech K. Fernando" readonly style="opacity: 0.7;">
+                                <label>Investigation Status *</label>
+                                <select name="test_status" class="form-control" required>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Inconclusive">Inconclusive — Further Testing Required</option>
+                                </select>
                             </div>
                             <div class="form-group full-width">
-                                <label>Findings / Results Summary</label>
-                                <textarea class="form-control" placeholder="e.g. Fracture of the mid-shaft of the left ulna observed..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Upload Lab Report (PDF / Image)</label>
-                                <input type="file" class="form-control" style="padding-top: 0.55rem;">
-                            </div>
-                            <div class="form-group">
-                                <label>Investigation Status</label>
-                                <select class="form-control">
-                                    <option>Completed</option>
-                                    <option>Inconclusive — Further Testing Required</option>
-                                </select>
+                                <label>Findings / Results Summary *</label>
+                                <textarea name="findings" class="form-control" rows="4" placeholder="e.g. Test results confirmed positive for toxic substances..." required></textarea>
                             </div>
                         </div>
                         <div class="form-actions">
                             <button type="button" class="btn-secondary" onclick="document.getElementById('result-form').style.display='none'">Cancel</button>
-                            <button type="button" class="btn-primary"><i data-feather="check-circle" style="width:16px;"></i> Submit Result to Doctor</button>
+                            <button type="submit" class="btn-primary"><i data-feather="check-circle" style="width:16px;"></i> Submit Result to Doctor</button>
                         </div>
                     </form>
                 </div>
@@ -205,17 +195,19 @@
             document.getElementById('view-lab').style.display = view === 'lab' ? 'block' : 'none';
             document.getElementById('btn-doctor').className = view === 'doctor' ? 'btn-primary' : 'btn-secondary';
             document.getElementById('btn-lab').className = view === 'lab' ? 'btn-primary' : 'btn-secondary';
-            document.getElementById('btn-doctor').style.fontSize = '0.85rem';
-            document.getElementById('btn-lab').style.fontSize = '0.85rem';
-            document.getElementById('btn-doctor').style.padding = '0.5rem 1rem';
-            document.getElementById('btn-lab').style.padding = '0.5rem 1rem';
         }
 
         function showResultForm(invId) {
             document.getElementById('result-form').style.display = 'block';
-            document.getElementById('inv-id-label').textContent = '#' + invId;
+            document.getElementById('inv-id-label').textContent = '#INV-' + invId;
+            document.getElementById('inv_id_input').value = invId;
             document.getElementById('result-form').scrollIntoView({ behavior: 'smooth' });
         }
+
+        // Auto toggle view based on user role
+        {% if session.get('role') == 'Laboratory Staff' %}
+        showView('lab');
+        {% endif %}
     </script>
 </body>
 </html>

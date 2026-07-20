@@ -6,7 +6,7 @@
     <title>Postmortems - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
@@ -14,12 +14,32 @@
             <i data-feather="shield"></i> ForensicDB
         </div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="autopsies.html" class="nav-link active"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link active"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -27,28 +47,91 @@
         <header class="header">
             <h1>Postmortem Module</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="form-card">
             <div class="form-title"><i data-feather="activity"></i> Record Postmortem Details</div>
-            <form action="#">
+            <form action="{{ url_for('autopsies') }}" method="POST">
                 <div class="form-grid">
-                    <div class="form-group"><label>Link to Case</label><select class="form-control"><option>#CAS-2026-003 (Unknown Male)</option><option>#CAS-2026-002 (Jane Smith)</option></select></div>
-                    <div class="form-group"><label>Type of Death</label><select class="form-control"><option>Natural</option><option>Accidental</option><option>Suicidal</option><option>Homicidal</option></select></div>
-                    <div class="form-group"><label>Date/Time of Death</label><input type="datetime-local" class="form-control"></div>
-                    <div class="form-group"><label>Autopsy Date</label><input type="date" class="form-control"></div>
-                    <div class="form-group full-width"><label>Cause of Death (COD)</label><textarea class="form-control" placeholder="e.g., Multiple injuries due to blunt force trauma..."></textarea></div>
-                    <div class="form-group full-width"><label>Additional Findings / Remarks</label><textarea class="form-control" placeholder="Enter findings from PMR dictation here..."></textarea></div>
-                    <div class="form-group"><label>Upload Scanned PMR / Audio File</label><input type="file" class="form-control" style="padding-top: 0.55rem;"></div>
+                    <div class="form-group">
+                        <label>Link to Case *</label>
+                        <select name="case_id" class="form-control" required>
+                            <option value="">-- Select Postmortem Case --</option>
+                            {% for c in pm_cases %}
+                            <option value="{{ c.case_id }}">#CAS-{{ c.case_id }} (Police Ref: {{ c.police_ref_no or 'N/A' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Type of Death *</label>
+                        <select name="type_of_death" class="form-control" required>
+                            <option value="Natural">Natural</option>
+                            <option value="Accidental">Accidental</option>
+                            <option value="Suicidal">Suicidal</option>
+                            <option value="Homicidal">Homicidal</option>
+                            <option value="Uncertain">Uncertain / Pending Investigation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Autopsy Date *</label>
+                        <input type="date" name="autopsy_date" class="form-control" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Body Condition / Examination Findings</label>
+                        <textarea name="body_condition" class="form-control" rows="3" placeholder="External/internal findings, cause of death notes..."></textarea>
+                    </div>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary">Save as Draft</button>
-                    <button type="button" class="btn-primary"><i data-feather="check-circle" style="width: 16px;"></i> Finalize Autopsy Record</button>
+                    <button type="reset" class="btn-secondary">Clear</button>
+                    <button type="submit" class="btn-primary"><i data-feather="check-circle" style="width: 16px;"></i> Finalize Autopsy Record</button>
                 </div>
             </form>
+        </div>
+
+        <!-- Autopsies Directory Table -->
+        <div class="table-container" style="margin-top: 2rem;">
+            <div class="table-header">
+                <div class="table-title">Postmortem Examination Records</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Autopsy ID</th>
+                        <th>Police Ref No.</th>
+                        <th>Type of Death</th>
+                        <th>Autopsy Date</th>
+                        <th>Performed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in autopsies %}
+                    <tr>
+                        <td>#PM-{{ a.autopsy_id }}</td>
+                        <td>{{ a.police_ref_no or 'N/A' }}</td>
+                        <td><span class="badge {% if a.type_of_death == 'Homicidal' %}rose{% elif a.type_of_death == 'Natural' %}emerald{% else %}purple{% endif %}">{{ a.type_of_death }}</span></td>
+                        <td>{{ a.autopsy_date }}</td>
+                        <td>{{ a.performed_by }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No autopsy records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </main>
 
