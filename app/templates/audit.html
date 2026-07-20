@@ -6,67 +6,94 @@
     <title>Audit Log - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
         <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <!-- ... -->
-            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
-            <li><a href="audit.html" class="nav-link active"><i data-feather="lock"></i> Audit Log</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link active"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
     <main class="main-content">
         <header class="header">
             <h1>System Security Audit Log</h1>
-            <div class="user-profile"><span class="user-name">System Administrator</span><div class="avatar" style="background-color: var(--danger);">A</div></div>
+            <div class="user-profile">
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar" style="background-color: var(--danger);">{{ session.get('full_name', 'A')[0] }}</div>
+            </div>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <div class="table-container">
             <div class="table-header">
-                <div class="table-title">Recent Security Events</div>
-                <div style="display:flex; gap:0.5rem;"><button class="btn-primary" style="padding: 0.5rem;"><i data-feather="download" style="width:16px;"></i> Export</button></div>
+                <div class="table-title">Audit Trail & Security Events</div>
             </div>
             <table>
                 <thead>
                     <tr>
+                        <th>Log ID</th>
                         <th>Timestamp</th>
                         <th>User Account</th>
                         <th>Action</th>
                         <th>Target Table / ID</th>
                         <th>IP Address</th>
                         <th>Severity</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for log in logs %}
                     <tr>
-                        <td>2026-07-19 14:05:22</td>
-                        <td>c_wickramasinghe</td>
-                        <td>UPDATE</td>
-                        <td>ClinicalCase (#CAS-001)</td>
-                        <td>192.168.1.45</td>
-                        <td><span class="badge completed" style="background:transparent; border:none; color:var(--text-secondary);">Info</span></td>
+                        <td>#LOG-{{ log.log_id }}</td>
+                        <td>{{ log.log_timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.log_timestamp else 'N/A' }}</td>
+                        <td><code>{{ log.user_account }}</code></td>
+                        <td><span class="badge blue">{{ log.action_type }}</span></td>
+                        <td>{{ log.target_table }}{% if log.target_id %} ({{ log.target_id }}){% endif %}</td>
+                        <td>{{ log.ip_address or 'Local' }}</td>
+                        <td><span class="badge {% if log.severity == 'Critical' %}rose{% elif log.severity == 'Warning' %}pending{% else %}completed{% endif %}">{{ log.severity }}</span></td>
+                        <td style="font-size: 0.85rem; color: var(--text-secondary);">{{ log.details or '-' }}</td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>2026-07-19 15:12:01</td>
-                        <td>unknown_user</td>
-                        <td>FAILED_LOGIN</td>
-                        <td>User Auth</td>
-                        <td>10.0.0.99</td>
-                        <td><span class="badge pending">Warning</span></td>
+                        <td colspan="8" style="text-align: center; color: var(--text-secondary);">No audit logs recorded yet.</td>
                     </tr>
-                    <tr>
-                        <td>2026-07-19 15:15:33</td>
-                        <td>unknown_user</td>
-                        <td>FAILED_LOGIN</td>
-                        <td>User Auth</td>
-                        <td>10.0.0.99</td>
-                        <td><span class="badge pending" style="background:var(--danger); color:white;">Critical</span></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
