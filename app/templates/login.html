@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Forensic Medical DB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <div class="login-logo">
+            <i data-feather="shield" style="width: 32px; height: 32px;"></i> ForensicDB
+        </div>
+        <form action="dashboard.html">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" placeholder="••••••••">
+            </div>
+            <button type="button" onclick="window.location.href='dashboard.html'" class="btn-primary">Secure Login</button>
+        </form>
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+            Authorized Personnel Only. All access is logged.
+        </div>
+    </div>
+    <script>feather.replace()</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - Forensic Medical DB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
+        <ul class="nav-menu">
+            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <!-- ... -->
+            <li style="margin-top: 2rem;"><a href="staff.html" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
+            <li><a href="audit.html" class="nav-link active"><i data-feather="lock"></i> Audit Log</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1>System Security Audit Log</h1>
+            <div class="user-profile"><span class="user-name">System Administrator</span><div class="avatar" style="background-color: var(--danger);">A</div></div>
+        </header>
+
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">Recent Security Events</div>
+                <div style="display:flex; gap:0.5rem;"><button class="btn-primary" style="padding: 0.5rem;"><i data-feather="download" style="width:16px;"></i> Export</button></div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User Account</th>
+                        <th>Action</th>
+                        <th>Target Table / ID</th>
+                        <th>IP Address</th>
+                        <th>Severity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-07-19 14:05:22</td>
+                        <td>c_wickramasinghe</td>
+                        <td>UPDATE</td>
+                        <td>ClinicalCase (#CAS-001)</td>
+                        <td>192.168.1.45</td>
+                        <td><span class="badge completed" style="background:transparent; border:none; color:var(--text-secondary);">Info</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-19 15:12:01</td>
+                        <td>unknown_user</td>
+                        <td>FAILED_LOGIN</td>
+                        <td>User Auth</td>
+                        <td>10.0.0.99</td>
+                        <td><span class="badge pending">Warning</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-07-19 15:15:33</td>
+                        <td>unknown_user</td>
+                        <td>FAILED_LOGIN</td>
+                        <td>User Auth</td>
+                        <td>10.0.0.99</td>
+                        <td><span class="badge pending" style="background:var(--danger); color:white;">Critical</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script>feather.replace()</script>
+</body>
+</html>
