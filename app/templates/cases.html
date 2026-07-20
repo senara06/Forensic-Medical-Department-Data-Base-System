@@ -6,7 +6,7 @@
     <title>Clinical Cases - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
@@ -14,12 +14,32 @@
             <i data-feather="shield"></i> ForensicDB
         </div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link active"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link active"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -27,26 +47,66 @@
         <header class="header">
             <h1>Clinical Case Management</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="form-card">
             <div class="form-title"><i data-feather="folder-plus"></i> Open New Clinical Case</div>
-            <form action="#">
+            <form action="{{ url_for('cases') }}" method="POST">
                 <div class="form-grid">
-                    <div class="form-group"><label>Select Patient</label><select class="form-control"><option>John Doe (981234567V)</option><option>Jane Smith (856723451V)</option></select></div>
-                    <div class="form-group"><label>Case Type</label><select class="form-control"><option>Clinical - Assault</option><option>Clinical - Trauma</option><option>Clinical - Abuse</option></select></div>
-                    <div class="form-group"><label>Incident Date & Time</label><input type="datetime-local" class="form-control"></div>
-                    <div class="form-group"><label>Incident Location</label><input type="text" class="form-control" placeholder="e.g. Kandy City Center"></div>
-                    <div class="form-group"><label>Police Station</label><input type="text" class="form-control" placeholder="e.g. Kandy HQ"></div>
-                    <div class="form-group"><label>Police Reference No.</label><input type="text" class="form-control" placeholder="e.g. PS-3059"></div>
-                    <div class="form-group full-width"><label>Assigned Medical Officer</label><select class="form-control"><option>Dr. Chathula Wickramasinghe</option><option>Dr. N. Perera</option></select></div>
+                    <div class="form-group">
+                        <label>Select Patient *</label>
+                        <select name="patient_id" class="form-control" required>
+                            <option value="">-- Select Patient --</option>
+                            {% for p in patients %}
+                            <option value="{{ p.patient_id }}">{{ p.first_name }} {{ p.last_name }} ({{ p.nic_passport or 'No NIC' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Case Type *</label>
+                        <select name="case_type" class="form-control" required>
+                            <option value="Clinical - Assault">Clinical - Assault</option>
+                            <option value="Clinical - Trauma">Clinical - Trauma</option>
+                            <option value="Clinical - Domestic Abuse">Clinical - Domestic Abuse</option>
+                            <option value="Clinical - Sexual Abuse">Clinical - Sexual Abuse</option>
+                            <option value="Clinical - Child Abuse">Clinical - Child Abuse</option>
+                            <option value="Clinical - Detainee / Age Estimation">Clinical - Detainee / Age Estimation</option>
+                            <option value="Postmortem - Hospital Death">Postmortem - Hospital Death</option>
+                            <option value="Postmortem - Outside Death">Postmortem - Outside Death</option>
+                            <option value="Postmortem - High Profile">Postmortem - High Profile</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Incident Date & Time</label><input type="datetime-local" name="incident_datetime" class="form-control"></div>
+                    <div class="form-group"><label>Incident Location</label><input type="text" name="incident_location" class="form-control" placeholder="e.g. Kandy City Center"></div>
+                    <div class="form-group"><label>Police Station</label><input type="text" name="police_station" class="form-control" placeholder="e.g. Kandy HQ"></div>
+                    <div class="form-group"><label>Police Reference No.</label><input type="text" name="police_ref_no" class="form-control" placeholder="e.g. PS-3059"></div>
+                    <div class="form-group">
+                        <label>Assigned Medical Officer *</label>
+                        <select name="assigned_staff_id" class="form-control" required>
+                            <option value="">-- Select Staff --</option>
+                            {% for s in staff %}
+                            <option value="{{ s.staff_id }}">{{ s.first_name }} {{ s.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group full-width"><label>Remarks / Notes</label><input type="text" name="remarks" class="form-control" placeholder="Initial case observations..."></div>
                 </div>
                 <div class="form-actions">
                     <button type="reset" class="btn-secondary">Clear</button>
-                    <button type="button" class="btn-primary"><i data-feather="file-text" style="width: 16px;"></i> Create Case & Initiate MLEF</button>
+                    <button type="submit" class="btn-primary"><i data-feather="file-text" style="width: 16px;"></i> Create Case Record</button>
                 </div>
             </form>
         </div>
@@ -54,26 +114,34 @@
         <!-- Case Directory -->
         <div class="table-container">
             <div class="table-header">
-                <div class="table-title">Active Clinical Cases</div>
+                <div class="table-title">Active Medico-Legal Cases</div>
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>Case ID</th>
                         <th>Patient</th>
-                        <th>Date</th>
-                        <th>Police Ref</th>
+                        <th>Case Type</th>
+                        <th>Date Opened</th>
+                        <th>Assigned Doctor</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for c in cases %}
                     <tr>
-                        <td>#CAS-2026-001</td>
-                        <td>John Doe</td>
-                        <td>2026-07-19</td>
-                        <td>PS-3059</td>
-                        <td><span class="badge pending">MLEF Pending</span></td>
+                        <td>#CAS-{{ c.case_id }}</td>
+                        <td><div class="patient-cell"><div class="patient-avatar">{{ c.first_name[0] }}{{ c.last_name[0] }}</div><span>{{ c.first_name }} {{ c.last_name }}</span></div></td>
+                        <td>{{ c.case_type }}</td>
+                        <td>{{ c.opened_at.strftime('%Y-%m-%d %H:%M') if c.opened_at else 'N/A' }}</td>
+                        <td>{{ c.assigned_doctor or 'Unassigned' }}</td>
+                        <td><span class="badge {% if c.status_name == 'Closed' %}completed{% elif c.status_name == 'Pending Approval' %}pending{% else %}processing{% endif %}">{{ c.status_name }}</span></td>
                     </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">No cases logged yet.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -6,7 +6,7 @@
     <title>Patients - Forensic Medical DB</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
@@ -14,12 +14,32 @@
             <i data-feather="shield"></i> ForensicDB
         </div>
         <ul class="nav-menu">
-            <li><a href="dashboard.html" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="patients.html" class="nav-link active"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="cases.html" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="autopsies.html" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link active"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -27,27 +47,38 @@
         <header class="header">
             <h1>Patient Management</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Registration Form -->
         <div class="form-card">
             <div class="form-title"><i data-feather="user-plus"></i> Register New Patient</div>
-            <form action="#">
+            <form action="{{ url_for('patients') }}" method="POST">
                 <div class="form-grid">
-                    <div class="form-group"><label>First Name</label><input type="text" class="form-control" placeholder="e.g. John"></div>
-                    <div class="form-group"><label>Last Name</label><input type="text" class="form-control" placeholder="e.g. Doe"></div>
-                    <div class="form-group"><label>NIC / Passport</label><input type="text" class="form-control" placeholder="e.g. 981234567V"></div>
-                    <div class="form-group"><label>Date of Birth</label><input type="date" class="form-control"></div>
-                    <div class="form-group"><label>Gender</label><select class="form-control"><option>Select Gender</option><option>Male</option><option>Female</option><option>Other</option></select></div>
-                    <div class="form-group"><label>Blood Group</label><select class="form-control"><option>Unknown</option><option>O+</option><option>A+</option><option>B+</option><option>AB+</option><option>O-</option></select></div>
-                    <div class="form-group full-width"><label>Home Address</label><input type="text" class="form-control" placeholder="Street, City, District"></div>
+                    <div class="form-group"><label>First Name *</label><input type="text" name="first_name" class="form-control" placeholder="e.g. John" required></div>
+                    <div class="form-group"><label>Last Name *</label><input type="text" name="last_name" class="form-control" placeholder="e.g. Doe" required></div>
+                    <div class="form-group"><label>NIC / Passport</label><input type="text" name="nic_passport" class="form-control" placeholder="e.g. 981234567V"></div>
+                    <div class="form-group"><label>Date of Birth</label><input type="date" name="dob" class="form-control"></div>
+                    <div class="form-group"><label>Gender</label><select name="gender" class="form-control"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option><option value="Unknown">Unknown</option></select></div>
+                    <div class="form-group"><label>Blood Group</label><select name="blood_group" class="form-control"><option value="Unknown">Unknown</option><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option><option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option></select></div>
+                    <div class="form-group"><label>Contact No</label><input type="text" name="contact_no" class="form-control" placeholder="e.g. 0771234567"></div>
+                    <div class="form-group full-width"><label>Home Address</label><input type="text" name="address" class="form-control" placeholder="Street, City, District"></div>
                 </div>
                 <div class="form-actions">
                     <button type="reset" class="btn-secondary">Clear</button>
-                    <button type="button" class="btn-primary"><i data-feather="save" style="width: 16px;"></i> Save Patient Record</button>
+                    <button type="submit" class="btn-primary"><i data-feather="save" style="width: 16px;"></i> Save Patient Record</button>
                 </div>
             </form>
         </div>
@@ -56,33 +87,33 @@
         <div class="table-container">
             <div class="table-header">
                 <div class="table-title">Patient Directory</div>
-                <div style="display:flex; gap:0.5rem;"><input type="text" class="form-control" placeholder="Search NIC or Name..." style="padding: 0.5rem; font-size: 0.85rem;"><button class="btn-primary" style="padding: 0.5rem;"><i data-feather="search" style="width:16px;"></i></button></div>
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>Patient ID</th>
                         <th>Name</th>
-                        <th>NIC</th>
+                        <th>NIC / Passport</th>
                         <th>Gender</th>
-                        <th>Action</th>
+                        <th>Blood Group</th>
+                        <th>Contact No</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for p in patients %}
                     <tr>
-                        <td>#PAT-1001</td>
-                        <td><div class="patient-cell"><div class="patient-avatar">JD</div><span>John Doe</span></div></td>
-                        <td>981234567V</td>
-                        <td>Male</td>
-                        <td><a href="#" style="color:var(--accent-blue);">Edit</a></td>
+                        <td>#PAT-{{ p.patient_id }}</td>
+                        <td><div class="patient-cell"><div class="patient-avatar">{{ p.first_name[0] }}{{ p.last_name[0] }}</div><span>{{ p.first_name }} {{ p.last_name }}</span></div></td>
+                        <td>{{ p.nic_passport or 'N/A' }}</td>
+                        <td>{{ p.gender }}</td>
+                        <td>{{ p.blood_group }}</td>
+                        <td>{{ p.contact_no or 'N/A' }}</td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>#PAT-1002</td>
-                        <td><div class="patient-cell"><div class="patient-avatar">JS</div><span>Jane Smith</span></div></td>
-                        <td>856723451V</td>
-                        <td>Female</td>
-                        <td><a href="#" style="color:var(--accent-blue);">Edit</a></td>
+                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">No patients registered yet.</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

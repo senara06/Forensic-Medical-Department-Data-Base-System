@@ -6,7 +6,7 @@
     <title>Dashboard - Forensic Medical DB System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <aside class="sidebar">
@@ -14,14 +14,32 @@
             <i data-feather="shield"></i> ForensicDB
         </div>
         <ul class="nav-menu">
-            <li><a href="#" class="nav-link active"><i data-feather="grid"></i> Dashboard</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="file-text"></i> Reports</a></li>
-            <li style="margin-top: 2rem;"><a href="#" class="nav-link"><i data-feather="settings"></i> Settings</a></li>
-            <li><a href="#" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link active"><i data-feather="grid"></i> Dashboard</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('investigations') }}" class="nav-link"><i data-feather="search"></i> Investigations</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% endif %}
+            {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            {% endif %}
+            {% if session.get('role') == 'Administrator' %}
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            {% endif %}
+            <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
     </aside>
 
@@ -29,28 +47,38 @@
         <header class="header">
             <h1>Overview</h1>
             <div class="user-profile">
-                <span class="user-name">Dr. Wickramasinghe (JMO)</span>
-                <div class="avatar">W</div>
+                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Stats Grid with Colored Cards -->
         <div class="dashboard-grid">
             <div class="stat-card rose">
                 <div class="stat-title">Pending MLEF Reports</div>
-                <div class="stat-value">12</div>
+                <div class="stat-value">{{ pending_mlef }}</div>
             </div>
             <div class="stat-card purple">
                 <div class="stat-title">Pending PM Reports</div>
-                <div class="stat-value">4</div>
+                <div class="stat-value">{{ pending_pm }}</div>
             </div>
             <div class="stat-card blue">
-                <div class="stat-title">Active Court Cases</div>
-                <div class="stat-value">28</div>
+                <div class="stat-title">Active Court Orders</div>
+                <div class="stat-value">{{ active_court }}</div>
             </div>
             <div class="stat-card emerald">
                 <div class="stat-title">Evidence Logged Today</div>
-                <div class="stat-value">15</div>
+                <div class="stat-value">{{ evidence_today }}</div>
             </div>
         </div>
 
@@ -67,7 +95,7 @@
                     <span style="display: flex; align-items: center; gap: 0.35rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #a855f7;"></span> Autopsy Cases</span>
                 </div>
                 <div class="chart-image-container">
-                    <img src="../static/img/chart.jpg" alt="Case Statistics Chart" style="max-height: 220px; object-fit: contain;">
+                    <img src="{{ url_for('static', filename='img/chart.jpg') }}" alt="Case Statistics Chart" style="max-height: 220px; object-fit: contain;">
                 </div>
             </section>
 
@@ -77,9 +105,9 @@
                     <div class="chart-title">Quick Actions</div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <button class="btn-primary" style="width: 100%; justify-content: center;"><i data-feather="file-plus" style="width:16px;"></i> Create New MLEF</button>
-                    <button class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white;"><i data-feather="archive" style="width:16px;"></i> Log Evidence</button>
-                    <button class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white;"><i data-feather="printer" style="width:16px;"></i> Print PMR</button>
+                    <a href="{{ url_for('cases') }}" class="btn-primary" style="width: 100%; justify-content: center; text-decoration: none;"><i data-feather="plus-circle" style="width:16px;"></i> Create New Case</a>
+                    <a href="{{ url_for('examinations') }}" class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white; text-decoration: none;"><i data-feather="file-text" style="width:16px;"></i> Record Examination</a>
+                    <a href="{{ url_for('evidence') }}" class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white; text-decoration: none;"><i data-feather="archive" style="width:16px;"></i> Log Evidence</a>
                 </div>
             </section>
         </div>
@@ -88,7 +116,7 @@
         <div class="table-container">
             <div class="table-header">
                 <div class="table-title">Recent Medico-Legal Cases</div>
-                <button class="btn-primary"><i data-feather="plus"></i> New Case</button>
+                <a href="{{ url_for('cases') }}" class="btn-primary" style="text-decoration: none;"><i data-feather="plus"></i> New Case</a>
             </div>
             <table>
                 <thead>
@@ -96,51 +124,29 @@
                         <th>Case ID</th>
                         <th>Patient / Deceased</th>
                         <th>Type</th>
-                        <th>Police Ref</th>
+                        <th>Date Opened</th>
                         <th>Status</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for case in recent_cases %}
                     <tr>
-                        <td>#CAS-2026-001</td>
+                        <td>#CAS-{{ case.case_id }}</td>
                         <td>
                             <div class="patient-cell">
-                                <div class="patient-avatar">JD</div>
-                                <span>John Doe</span>
+                                <div class="patient-avatar">{{ case.first_name[0] }}{{ case.last_name[0] }}</div>
+                                <span>{{ case.first_name }} {{ case.last_name }}</span>
                             </div>
                         </td>
-                        <td>Clinical (Assault)</td>
-                        <td>PS-3059</td>
-                        <td><span class="badge pending">MLEF Pending</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">View</a></td>
+                        <td>{{ case.case_type }}</td>
+                        <td>{{ case.opened_at.strftime('%Y-%m-%d %H:%M') if case.opened_at else 'N/A' }}</td>
+                        <td><span class="badge {% if case.status_name == 'Closed' %}completed{% elif case.status_name == 'Pending Approval' %}pending{% else %}processing{% endif %}">{{ case.status_name }}</span></td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>#CAS-2026-002</td>
-                        <td>
-                            <div class="patient-cell">
-                                <div class="patient-avatar">JS</div>
-                                <span>Jane Smith</span>
-                            </div>
-                        </td>
-                        <td>Autopsy (RTA)</td>
-                        <td>PS-47169</td>
-                        <td><span class="badge processing">Awaiting Histology</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">View</a></td>
+                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No recent cases found.</td>
                     </tr>
-                    <tr>
-                        <td>#CAS-2026-003</td>
-                        <td>
-                            <div class="patient-cell">
-                                <div class="patient-avatar" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5;">U</div>
-                                <span>Unknown Male</span>
-                            </div>
-                        </td>
-                        <td>Autopsy (Suicide)</td>
-                        <td>B.S. Jayalath</td>
-                        <td><span class="badge completed">Report Issued</span></td>
-                        <td><a href="#" style="color:var(--accent-blue);">View</a></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
