@@ -13,16 +13,16 @@
         <div class="login-logo">
             <i data-feather="shield" style="width: 32px; height: 32px;"></i> ForensicDB
         </div>
-        <form action="dashboard.html">
+        <form action="/login" method="POST">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" class="form-control" placeholder="Enter your username">
+                <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" class="form-control" placeholder="••••••••">
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
-            <button type="button" onclick="window.location.href='dashboard.html'" class="btn-primary">Secure Login</button>
+            <button type="submit" class="btn-primary">Secure Login</button>
         </form>
         <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
             Authorized Personnel Only. All access is logged.
