@@ -1,34 +1,35 @@
 /* ============================================================
-   ForensicDB — Role-Based Vibrant Design System
-   Dynamic role themes: JMO/MO (Teal), Lab (Violet), Clerk (Cyan), Admin (Amber)
+   ForensicDB — Clean Light Mode Design System
+   Bright white theme with vibrant role-based color accents
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ---- Default Color Palette (Fallback) ---- */
+/* ---- Light Mode Core Variables ---- */
 :root {
-  --bg-dark:          #080c16;
-  --bg-surface:       #111827;
-  --bg-surface-2:     #172033;
-  --bg-surface-hover: #1e293b;
-  --text-primary:     #f8fafc;
-  --text-secondary:   #94a3b8;
-  --text-muted:       #64748b;
+  --bg-dark:          #f8fafc;  /* Clean white / light slate background */
+  --bg-surface:       #ffffff;  /* Pure white cards */
+  --bg-surface-2:     #f1f5f9;  /* Off-white secondary surfaces */
+  --bg-surface-hover: #e2e8f0;  /* Light gray hover state */
+  --text-primary:     #0f172a;  /* Deep slate readable text */
+  --text-secondary:   #475569;  /* Medium slate text */
+  --text-muted:       #64748b;  /* Muted text & icons */
   
-  /* Accent Tokens (Overridden per role) */
-  --accent-primary:      #0ea5e9;
-  --accent-hover:        #0284c7;
-  --accent-glow:         rgba(14, 165, 233, 0.15);
-  --accent-border:       rgba(14, 165, 233, 0.3);
-  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(14, 165, 233, 0.12) 0%, transparent 60%);
+  /* Role Accent Tokens (Overridden per role below) */
+  --accent-primary:      #0284c7;
+  --accent-hover:        #0369a1;
+  --accent-glow:         rgba(2, 132, 199, 0.12);
+  --accent-border:       rgba(2, 132, 199, 0.3);
+  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(2, 132, 199, 0.06) 0%, transparent 60%);
 
-  --danger:           #ef4444;
-  --success:          #10b981;
-  --warning:          #f59e0b;
-  --border-color:     rgba(255, 255, 255, 0.08);
-  --shadow-sm:        0 2px 4px rgba(0,0,0,0.3);
-  --shadow-md:        0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg:        0 8px 32px rgba(0,0,0,0.5);
+  --danger:           #dc2626;
+  --success:          #059669;
+  --warning:          #d97706;
+  --border-color:     #e2e8f0;
+  --border-focus:     #cbd5e1;
+  --shadow-sm:        0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md:        0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg:        0 10px 30px rgba(0,0,0,0.08);
   --radius-sm:        6px;
   --radius-md:        10px;
   --radius-lg:        14px;
@@ -36,44 +37,44 @@
 }
 
 /* ============================================================
-   ROLE-BASED VIBRANT COLOR THEMES
+   ROLE-BASED VIBRANT COLOR ACCENTS (LIGHT MODE)
    ============================================================ */
 
-/* 👨‍⚕️ Doctors / JMO & MO: Medical Emerald & Teal Theme */
+/* 👨‍⚕️ Doctors / JMO & MO: Medical Emerald & Teal */
 body.role-judicial-medical-officer,
 body.role-medical-officer {
-  --accent-primary:      #10b981;
-  --accent-hover:        #059669;
-  --accent-glow:         rgba(16, 185, 129, 0.15);
-  --accent-border:       rgba(16, 185, 129, 0.35);
-  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 60%);
+  --accent-primary:      #059669;
+  --accent-hover:        #047857;
+  --accent-glow:         rgba(5, 150, 105, 0.12);
+  --accent-border:       rgba(5, 150, 105, 0.3);
+  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(5, 150, 105, 0.08) 0%, transparent 60%);
 }
 
-/* 🔬 Laboratory Staff: Scientific Violet & Neon Purple Theme */
+/* 🔬 Laboratory Staff: Scientific Purple & Violet */
 body.role-laboratory-staff {
-  --accent-primary:      #a855f7;
-  --accent-hover:        #9333ea;
-  --accent-glow:         rgba(168, 85, 247, 0.15);
-  --accent-border:       rgba(168, 85, 247, 0.35);
-  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 60%);
+  --accent-primary:      #7c3aed;
+  --accent-hover:        #6d28d9;
+  --accent-glow:         rgba(124, 58, 237, 0.12);
+  --accent-border:       rgba(124, 58, 237, 0.3);
+  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
 }
 
-/* 📋 Clerical Officers: Ocean Cyan & Deep Sky Theme */
+/* 📋 Clerical Officers: Ocean Cyan & Deep Blue */
 body.role-clerical-officer {
-  --accent-primary:      #06b6d4;
-  --accent-hover:        #0891b2;
-  --accent-glow:         rgba(6, 182, 212, 0.15);
-  --accent-border:       rgba(6, 182, 212, 0.35);
-  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
+  --accent-primary:      #0284c7;
+  --accent-hover:        #0369a1;
+  --accent-glow:         rgba(2, 132, 199, 0.12);
+  --accent-border:       rgba(2, 132, 199, 0.3);
+  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 60%);
 }
 
-/* 👨‍💼 Administrator: Executive Amber & Gold Theme */
+/* 👨‍💼 Administrator: Executive Amber & Gold */
 body.role-administrator {
-  --accent-primary:      #f59e0b;
-  --accent-hover:        #d97706;
-  --accent-glow:         rgba(245, 158, 11, 0.15);
-  --accent-border:       rgba(245, 158, 11, 0.35);
-  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 60%);
+  --accent-primary:      #d97706;
+  --accent-hover:        #b45309;
+  --accent-glow:         rgba(217, 119, 6, 0.12);
+  --accent-border:       rgba(217, 119, 6, 0.3);
+  --header-bg-gradient:  radial-gradient(ellipse at 80% 0%, rgba(217, 119, 6, 0.08) 0%, transparent 60%);
 }
 
 /* ---- Reset ---- */
@@ -95,14 +96,14 @@ body {
 a { text-decoration: none; color: inherit; }
 
 /* ============================================================
-   LOGIN PAGE
+   LOGIN PAGE (LIGHT MODE)
    ============================================================ */
 body.login-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 20% 40%, rgba(14, 165, 233, 0.1) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 60%, rgba(168, 85, 247, 0.1) 0%, transparent 60%),
+  background: radial-gradient(ellipse at 20% 40%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 60%, rgba(124, 58, 237, 0.08) 0%, transparent 60%),
               var(--bg-dark);
   min-height: 100vh;
 }
@@ -114,7 +115,7 @@ body.login-body {
   padding: 2.5rem 2.5rem 2rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: var(--shadow-lg), 0 0 50px rgba(14, 165, 233, 0.08);
+  box-shadow: var(--shadow-lg), 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .login-logo {
@@ -148,8 +149,8 @@ body.login-body {
 
 .login-card .form-control {
   width: 100%;
-  background: var(--bg-dark);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.75rem 1rem;
@@ -176,11 +177,11 @@ body.login-body {
 }
 
 /* ============================================================
-   SIDEBAR NAVIGATION
+   SIDEBAR NAVIGATION (LIGHT MODE)
    ============================================================ */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--bg-surface);
+  background: #ffffff;
   border-right: 1px solid var(--border-color);
   padding: 1.75rem 1rem;
   display: flex;
@@ -189,6 +190,7 @@ body.login-body {
   top: 0; left: 0; bottom: 0;
   z-index: 100;
   overflow-y: auto;
+  box-shadow: 1px 0 3px rgba(0,0,0,0.02);
 }
 
 .sidebar-brand {
@@ -290,7 +292,7 @@ body.login-body {
 .avatar {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-primary), var(--bg-surface-2));
+  background: linear-gradient(135deg, var(--accent-primary), #475569);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -298,12 +300,12 @@ body.login-body {
   font-size: 0.95rem;
   color: white;
   border: 2px solid var(--accent-border);
-  box-shadow: 0 0 12px var(--accent-glow);
+  box-shadow: 0 2px 8px var(--accent-glow);
   flex-shrink: 0;
 }
 
 /* ============================================================
-   DASHBOARD STATS CARDS
+   DASHBOARD STATS CARDS (LIGHT MODE)
    ============================================================ */
 .dashboard-grid {
   display: grid;
@@ -316,9 +318,10 @@ body.login-body {
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
-  background: var(--bg-surface);
+  background: #ffffff;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
   transition: all 0.25s ease;
 }
 
@@ -331,14 +334,14 @@ body.login-body {
   height: 3px;
 }
 
-.stat-card.rose    { background: linear-gradient(135deg, rgba(244, 63, 94, 0.1) 0%, var(--bg-surface) 100%); }
-.stat-card.rose::before { background: #f43f5e; }
-.stat-card.blue    { background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, var(--bg-surface) 100%); }
-.stat-card.blue::before { background: #0ea5e9; }
-.stat-card.emerald { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, var(--bg-surface) 100%); }
-.stat-card.emerald::before { background: #10b981; }
-.stat-card.purple  { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, var(--bg-surface) 100%); }
-.stat-card.purple::before { background: #a855f7; }
+.stat-card.rose    { background: linear-gradient(135deg, rgba(244, 63, 94, 0.05) 0%, #ffffff 100%); }
+.stat-card.rose::before { background: #e11d48; }
+.stat-card.blue    { background: linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, #ffffff 100%); }
+.stat-card.blue::before { background: #0284c7; }
+.stat-card.emerald { background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, #ffffff 100%); }
+.stat-card.emerald::before { background: #059669; }
+.stat-card.purple  { background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, #ffffff 100%); }
+.stat-card.purple::before { background: #7c3aed; }
 
 .stat-title {
   color: var(--text-secondary);
@@ -358,10 +361,10 @@ body.login-body {
 }
 
 /* ============================================================
-   FORM CARDS & CONTROLS
+   FORM CARDS & CONTROLS (LIGHT MODE)
    ============================================================ */
 .form-card {
-  background: var(--bg-surface);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.75rem 2rem;
@@ -407,8 +410,8 @@ body.login-body {
 
 .form-control {
   width: 100%;
-  background: var(--bg-dark);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.65rem 0.9rem;
@@ -428,14 +431,14 @@ body.login-body {
 .form-control::placeholder { color: var(--text-muted); }
 
 select.form-control {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.85rem center;
   padding-right: 2.25rem;
   cursor: pointer;
 }
 
-select.form-control option { background-color: var(--bg-surface); }
+select.form-control option { background-color: #ffffff; color: var(--text-primary); }
 
 .form-actions {
   display: flex;
@@ -465,21 +468,21 @@ select.form-control option { background-color: var(--bg-surface); }
   gap: 0.5rem;
   white-space: nowrap;
   letter-spacing: 0.2px;
-  box-shadow: 0 2px 10px var(--accent-glow);
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px var(--accent-glow);
+  box-shadow: 0 4px 12px var(--accent-glow);
   opacity: 0.95;
 }
 
 .btn-primary svg { width: 16px; height: 16px; }
 
 .btn-secondary {
-  background: var(--bg-surface-hover);
+  background: #f1f5f9;
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid #cbd5e1;
   padding: 0.65rem 1.35rem;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -493,15 +496,15 @@ select.form-control option { background-color: var(--bg-surface); }
 }
 
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.08);
+  background: #e2e8f0;
   color: var(--text-primary);
 }
 
 /* ============================================================
-   DATA TABLES
+   DATA TABLES (LIGHT MODE)
    ============================================================ */
 .table-container {
-  background: var(--bg-surface);
+  background: #ffffff;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   overflow: hidden;
@@ -534,7 +537,7 @@ thead th {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(0,0,0,0.18);
+  background: #f8fafc;
   white-space: nowrap;
 }
 
@@ -547,7 +550,7 @@ tbody td {
 }
 
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: rgba(255,255,255,0.025); }
+tbody tr:hover { background: #f8fafc; }
 
 /* ---- Patient cell with avatar ---- */
 .patient-cell { display: flex; align-items: center; gap: 0.65rem; }
@@ -565,7 +568,7 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
 }
 
 /* ============================================================
-   BADGES
+   BADGES (LIGHT MODE)
    ============================================================ */
 .badge {
   display: inline-flex;
@@ -579,9 +582,9 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
   text-transform: uppercase;
 }
 
-.badge.pending      { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); }
-.badge.completed    { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); }
-.badge.processing   { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.25); }
+.badge.pending      { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.badge.completed    { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge.processing   { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 
 /* ============================================================
    ALERTS
@@ -598,14 +601,14 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
   border: 1px solid;
 }
 
-.alert-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.25); }
-.alert-danger  { background: rgba(239, 68, 68, 0.1);  color: #f87171; border-color: rgba(239, 68, 68, 0.25); }
+.alert-success { background: #dcfce7; color: #15803d; border-color: #86efac; }
+.alert-danger  { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 
 /* ============================================================
    CHART SECTION
    ============================================================ */
 .chart-section {
-  background: var(--bg-surface);
+  background: #ffffff;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   padding: 1.5rem;
@@ -626,10 +629,10 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
   width: 100%;
   border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid #e2e8f0;
 }
 
 .chart-image-container img {
   width: 100%; height: auto; display: block;
-  object-fit: cover; max-height: 280px; opacity: 0.9;
+  object-fit: cover; max-height: 280px;
 }
