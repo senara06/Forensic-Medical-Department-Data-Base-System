@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Forensic Medical DB</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Login — ForensicDB</title>
+    <meta name="description" content="Secure login for Forensic Medical Department Management System">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
@@ -13,33 +13,43 @@
 <body class="login-body">
     <div class="login-card">
         <div class="login-logo">
-            <i data-feather="shield" style="width: 32px; height: 32px;"></i> ForensicDB
+            <i data-feather="shield"></i> ForensicDB
         </div>
+        <p class="login-subtitle">Secure access for authorised personnel only</p>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.9rem; background-color: {% if category == 'danger' %}#fee2e2; color: #991b1b; border: 1px solid #f87171{% else %}#dcfce7; color: #166534; border: 1px solid #86efac{% endif %};">
+                    <div class="alert alert-{{ category }}">
+                        <i data-feather="{% if category == 'danger' %}alert-circle{% else %}check-circle{% endif %}" style="width:15px;height:15px;flex-shrink:0;"></i>
                         {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         <form action="{{ url_for('login') }}" method="POST">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
+                <input type="text" name="username" class="form-control"
+                       placeholder="Enter your username" required autocomplete="username">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom:0;">
                 <label>Password</label>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                <input type="password" name="password" class="form-control"
+                       placeholder="••••••••" required autocomplete="current-password">
             </div>
-            <button type="submit" class="btn-primary">Secure Login</button>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem;margin-top:1.5rem;">
+                <i data-feather="log-in" style="width:16px;height:16px;"></i>
+                Secure Login
+            </button>
         </form>
-        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-secondary);">
-            Authorized Personnel Only. All access is logged.
+
+        <div class="login-footer">
+            <i data-feather="lock" style="width:13px;height:13px;"></i>
+            All access is monitored and logged
         </div>
     </div>
     <script>feather.replace()</script>
 </body>
-
 </html>
