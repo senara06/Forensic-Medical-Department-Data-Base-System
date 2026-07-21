@@ -107,10 +107,10 @@
                 <div class="chart-header">
                     <div class="chart-title">Quick Actions</div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <a href="{{ url_for('cases') }}" class="btn-primary" style="width: 100%; justify-content: center; text-decoration: none;"><i data-feather="plus-circle" style="width:16px;"></i> Create New Case</a>
-                    <a href="{{ url_for('examinations') }}" class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white; text-decoration: none;"><i data-feather="file-text" style="width:16px;"></i> Record Examination</a>
-                    <a href="{{ url_for('evidence') }}" class="btn-primary" style="width: 100%; justify-content: center; background: var(--bg-surface-hover); color: white; text-decoration: none;"><i data-feather="archive" style="width:16px;"></i> Log Evidence</a>
+                <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <a href="{{ url_for('cases') }}" class="btn-primary" style="width: 100%; justify-content: center;"><i data-feather="plus-circle" style="width:16px;"></i> Create New Case</a>
+                    <a href="{{ url_for('examinations') }}" class="btn-secondary" style="width: 100%; justify-content: center;"><i data-feather="file-text" style="width:16px;"></i> Record Examination</a>
+                    <a href="{{ url_for('evidence') }}" class="btn-secondary" style="width: 100%; justify-content: center;"><i data-feather="archive" style="width:16px;"></i> Log Evidence</a>
                 </div>
             </section>
         </div>
