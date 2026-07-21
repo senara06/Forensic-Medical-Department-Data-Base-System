@@ -8,9 +8,11 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body>
+<body class="role-{{ session.get('role', '') | lower | replace(' ', '-') }}">
     <aside class="sidebar">
-        <div class="sidebar-brand"><i data-feather="shield"></i> ForensicDB</div>
+        <div class="sidebar-brand">
+            <i data-feather="shield"></i> ForensicDB
+        </div>
         <ul class="nav-menu">
             <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
             {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
@@ -43,10 +45,13 @@
 
     <main class="main-content">
         <header class="header">
-            <h1>System Security Audit Log</h1>
+            <h1>System Audit & Access Logs</h1>
             <div class="user-profile">
-                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
-                <div class="avatar" style="background-color: var(--danger);">{{ session.get('full_name', 'A')[0] }}</div>
+                <div>
+                    <div class="user-name">{{ session.get('full_name', 'User') }}</div>
+                    <div class="user-role-badge">{{ session.get('role', 'Staff') }}</div>
+                </div>
+                <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
 

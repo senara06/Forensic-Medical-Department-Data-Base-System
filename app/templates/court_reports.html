@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body>
+<body class="role-{{ session.get('role', '') | lower | replace(' ', '-') }}">
     <aside class="sidebar">
         <div class="sidebar-brand">
             <i data-feather="shield"></i> ForensicDB
@@ -45,9 +45,12 @@
 
     <main class="main-content">
         <header class="header">
-            <h1>Medico-Legal Court Reports</h1>
+            <h1>Court & Medico-Legal Reports</h1>
             <div class="user-profile">
-                <span class="user-name">{{ session.get('full_name', 'User') }} ({{ session.get('role', 'Staff') }})</span>
+                <div>
+                    <div class="user-name">{{ session.get('full_name', 'User') }}</div>
+                    <div class="user-role-badge">{{ session.get('role', 'Staff') }}</div>
+                </div>
                 <div class="avatar">{{ session.get('full_name', 'U')[0] }}</div>
             </div>
         </header>
