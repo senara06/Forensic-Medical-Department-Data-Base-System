@@ -409,7 +409,7 @@ def autopsies():
     return render_template('autopsies.html', autopsies=autopsies_list, pm_cases=pm_cases)
 
 @app.route('/evidence', methods=['GET', 'POST'])
-@role_required('Judicial Medical Officer', 'Medical Officer', 'Administrator')
+@role_required('Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator')
 def evidence():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)

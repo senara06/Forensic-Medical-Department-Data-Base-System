@@ -13,31 +13,31 @@
         <div class="sidebar-brand">
             <i data-feather="shield"></i> ForensicDB
         </div>
-        <ul class="nav-menu">
-            <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i data-feather="grid"></i> Dashboard</a></li>
+                <ul class="nav-menu">
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"><i data-feather="grid"></i> Dashboard</a></li>
             {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
-            <li><a href="{{ url_for('patients') }}" class="nav-link"><i data-feather="users"></i> Patients</a></li>
-            <li><a href="{{ url_for('cases') }}" class="nav-link"><i data-feather="folder"></i> Clinical Cases</a></li>
+            <li><a href="{{ url_for('patients') }}" class="nav-link {% if request.endpoint == 'patients' %}active{% endif %}"><i data-feather="users"></i> Patients</a></li>
+            <li><a href="{{ url_for('cases') }}" class="nav-link {% if request.endpoint == 'cases' %}active{% endif %}"><i data-feather="folder"></i> Clinical Cases</a></li>
             {% endif %}
             {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
-            <li><a href="{{ url_for('examinations') }}" class="nav-link"><i data-feather="check-square"></i> Examinations</a></li>
+            <li><a href="{{ url_for('examinations') }}" class="nav-link {% if request.endpoint == 'examinations' %}active{% endif %}"><i data-feather="check-square"></i> Examinations</a></li>
             {% endif %}
             {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
-            <li><a href="{{ url_for('investigations') }}" class="nav-link active"><i data-feather="search"></i> Investigations</a></li>
+            <li><a href="{{ url_for('investigations') }}" class="nav-link {% if request.endpoint == 'investigations' %}active{% endif %}"><i data-feather="search"></i> Investigations</a></li>
             {% endif %}
             {% if session.get('role') in ['Judicial Medical Officer', 'Administrator'] %}
-            <li><a href="{{ url_for('autopsies') }}" class="nav-link"><i data-feather="activity"></i> Postmortems</a></li>
+            <li><a href="{{ url_for('autopsies') }}" class="nav-link {% if request.endpoint == 'autopsies' %}active{% endif %}"><i data-feather="activity"></i> Postmortems</a></li>
             {% endif %}
-            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Administrator'] %}
-            <li><a href="{{ url_for('evidence') }}" class="nav-link"><i data-feather="archive"></i> Evidence</a></li>
+            {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Laboratory Staff', 'Administrator'] %}
+            <li><a href="{{ url_for('evidence') }}" class="nav-link {% if request.endpoint == 'evidence' %}active{% endif %}"><i data-feather="archive"></i> Evidence</a></li>
             {% endif %}
             {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
-            <li><a href="{{ url_for('court_reports') }}" class="nav-link"><i data-feather="file-text"></i> Court Reports</a></li>
-            <li><a href="{{ url_for('reports') }}" class="nav-link"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            <li><a href="{{ url_for('court_reports') }}" class="nav-link {% if request.endpoint == 'court_reports' %}active{% endif %}"><i data-feather="file-text"></i> Court Reports</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}"><i data-feather="bar-chart-2"></i> Analytics</a></li>
             {% endif %}
             {% if session.get('role') == 'Administrator' %}
-            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link"><i data-feather="users"></i> Staff Directory</a></li>
-            <li><a href="{{ url_for('audit') }}" class="nav-link"><i data-feather="shield"></i> Audit Logs</a></li>
+            <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link {% if request.endpoint == 'staff' %}active{% endif %}"><i data-feather="users"></i> Staff Directory</a></li>
+            <li><a href="{{ url_for('audit') }}" class="nav-link {% if request.endpoint == 'audit' %}active{% endif %}"><i data-feather="shield"></i> Audit Logs</a></li>
             {% endif %}
             <li style="margin-top: 1.5rem;"><a href="{{ url_for('logout') }}" class="nav-link"><i data-feather="log-out"></i> Logout</a></li>
         </ul>
