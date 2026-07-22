@@ -502,11 +502,89 @@ def reports():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    cursor.execute("SELECT * FROM CasesByMonth")
+    # 1. Monthly Aggregate Report
+    cursor.execute("SELECT * FROM CasesByMonth ORDER BY month_year DESC")
     cases_by_month = cursor.fetchall()
     
+    # 2. Daily Case Report (All cases ordered by newest opened_at)
+    cursor.execute("""
+        SELECT c.case_id, CONCAT(p.first_name, ' ', p.last_name) as patient_name, 
+               p.nic_passport, c.case_type, c.police_station, c.opened_at, 
+               cs.status_name, CONCAT(s.first_name, ' ', s.last_name) as staff_name
+        FROM clinicalcase c
+        JOIN patient p ON c.patient_id = p.patient_id
+        JOIN casestatus cs ON c.status_id = cs.status_id
+        JOIN staff s ON c.assigned_staff_id = s.staff_id
+        ORDER BY c.opened_at DESC
+    """)
+    daily_cases = cursor.fetchall()
+    
+    # 3. Pending Cases Report (Status != Closed)
+    cursor.execute("""
+        SELECT c.case_id, CONCAT(p.first_name, ' ', p.last_name) as patient_name, 
+               c.case_type, c.police_station, c.opened_at, cs.status_name, 
+               CONCAT(s.first_name, ' ', s.last_name) as staff_name,
+               DATEDIFF(NOW(), c.opened_at) as days_pending
+        FROM clinicalcase c
+        JOIN patient p ON c.patient_id = p.patient_id
+        JOIN casestatus cs ON c.status_id = cs.status_id
+        JOIN staff s ON c.assigned_staff_id = s.staff_id
+        WHERE cs.status_name != 'Closed'
+        ORDER BY days_pending DESC
+    """)
+    pending_cases = cursor.fetchall()
+    
+    # 4. Court Report Summary
+    cursor.execute("""
+        SELECT cr.report_id, cr.case_id, cr.report_type, cr.court_ref, 
+               cr.submission_date, cr.report_status, 
+               CONCAT(s.first_name, ' ', s.last_name) as submitted_by, 
+               CONCAT(p.first_name, ' ', p.last_name) as patient_name
+        FROM courtreport cr
+        JOIN clinicalcase c ON cr.case_id = c.case_id
+        JOIN patient p ON c.patient_id = p.patient_id
+        JOIN staff s ON cr.submitted_by = s.staff_id
+        ORDER BY cr.report_id DESC
+    """)
+    court_reports_list = cursor.fetchall()
+    
+    # 5. Statistical Analytics
+    cursor.execute("SELECT COUNT(*) as total FROM clinicalcase")
+    total_cases = cursor.fetchone()['total']
+    
+    cursor.execute("SELECT COUNT(*) as pending FROM clinicalcase c JOIN casestatus cs ON c.status_id = cs.status_id WHERE cs.status_name != 'Closed'")
+    pending_count = cursor.fetchone()['pending']
+    
+    cursor.execute("SELECT COUNT(*) as closed FROM clinicalcase c JOIN casestatus cs ON c.status_id = cs.status_id WHERE cs.status_name = 'Closed'")
+    closed_count = cursor.fetchone()['closed']
+    
+    cursor.execute("SELECT COUNT(*) as total_reports FROM courtreport")
+    court_count = cursor.fetchone()['total_reports']
+    
+    cursor.execute("""
+        SELECT case_type, COUNT(*) as count 
+        FROM clinicalcase 
+        GROUP BY case_type
+    """)
+    type_stats = cursor.fetchall()
+    
+    stats = {
+        'total_cases': total_cases,
+        'pending_count': pending_count,
+        'closed_count': closed_count,
+        'court_count': court_count,
+        'type_stats': type_stats
+    }
+    
     conn.close()
-    return render_template('reports.html', cases_by_month=cases_by_month)
+    return render_template(
+        'reports.html', 
+        cases_by_month=cases_by_month,
+        daily_cases=daily_cases,
+        pending_cases=pending_cases,
+        court_reports_list=court_reports_list,
+        stats=stats
+    )
 
 @app.route('/staff', methods=['GET', 'POST'])
 @role_required('Administrator')

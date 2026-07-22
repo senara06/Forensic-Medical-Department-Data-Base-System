@@ -3,17 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Reports - Forensic Medical DB</title>
+    <title>Chapter 7 - Forensic Reports & Analytics</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .report-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color, #fed7aa);
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .report-tab {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid var(--border-color, #ea580c);
+            color: #431407;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .report-tab:hover, .report-tab.active {
+            background: #ea580c;
+            color: #ffffff;
+            border-color: #ea580c;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+        }
+        .report-section {
+            display: none;
+        }
+        .report-section.active {
+            display: block;
+        }
+        .report-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            background: #fff7ed;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border-left: 5px solid #ea580c;
+        }
+        .report-title-text h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #9a3412;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .report-title-text p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.85rem;
+            color: #c2410c;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: #fff;
+            border: 1px solid #fed7aa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid #ea580c;
+        }
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #9a3412;
+        }
+        .stat-lbl {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+    </style>
 </head>
 <body class="role-{{ session.get('role', '') | lower | replace(' ', '-') }}">
     <aside class="sidebar">
         <div class="sidebar-brand">
             <i data-feather="shield"></i> ForensicDB
         </div>
-                <ul class="nav-menu">
+        <ul class="nav-menu">
             <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"><i data-feather="grid"></i> Dashboard</a></li>
             {% if session.get('role') in ['Judicial Medical Officer', 'Medical Officer', 'Clerical Officer', 'Administrator'] %}
             <li><a href="{{ url_for('patients') }}" class="nav-link {% if request.endpoint == 'patients' %}active{% endif %}"><i data-feather="users"></i> Patients</a></li>
@@ -33,7 +117,7 @@
             {% endif %}
             {% if session.get('role') in ['Judicial Medical Officer', 'Clerical Officer', 'Administrator'] %}
             <li><a href="{{ url_for('court_reports') }}" class="nav-link {% if request.endpoint == 'court_reports' %}active{% endif %}"><i data-feather="file-text"></i> Court Reports</a></li>
-            <li><a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}"><i data-feather="bar-chart-2"></i> Analytics</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}"><i data-feather="bar-chart-2"></i> Reports & Analytics</a></li>
             {% endif %}
             {% if session.get('role') == 'Administrator' %}
             <li style="margin-top: 1rem;"><a href="{{ url_for('staff') }}" class="nav-link {% if request.endpoint == 'staff' %}active{% endif %}"><i data-feather="users"></i> Staff Directory</a></li>
@@ -45,7 +129,10 @@
 
     <main class="main-content">
         <header class="header">
-            <h1>Department Analytics & Statistics</h1>
+            <div>
+                <h1>Chapter 7 - Department Reports</h1>
+                <p style="margin: 0; color: #7c2d12; font-size: 0.9rem;">Generate official forensic reports for court, daily intake, pending cases & monthly statistics</p>
+            </div>
             <div class="user-profile">
                 <div>
                     <div class="user-name">{{ session.get('full_name', 'User') }}</div>
@@ -65,35 +152,294 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Monthly Case Statistics (View: CasesByMonth) -->
-        <div class="table-container">
-            <div class="table-header">
-                <div class="table-title"><i data-feather="bar-chart-2"></i> Monthly Case Aggregates (View: CasesByMonth)</div>
+        <!-- Report Tabs Navigation for Chapter 7 -->
+        <div class="report-nav">
+            <button class="report-tab active" onclick="switchReport('daily')"><i data-feather="calendar"></i> 1. Daily Case Report</button>
+            <button class="report-tab" onclick="switchReport('monthly')"><i data-feather="bar-chart-2"></i> 2. Monthly Report</button>
+            <button class="report-tab" onclick="switchReport('pending')"><i data-feather="clock"></i> 3. Pending Cases</button>
+            <button class="report-tab" onclick="switchReport('court')"><i data-feather="file-text"></i> 4. Court Report</button>
+            <button class="report-tab" onclick="switchReport('stats')"><i data-feather="pie-chart"></i> 5. Statistical Report</button>
+        </div>
+
+        <!-- 1. Daily Case Report -->
+        <div id="report-daily" class="report-section active">
+            <div class="report-header-bar">
+                <div class="report-title-text">
+                    <h2><i data-feather="calendar"></i> Daily Case Intake & Status Report</h2>
+                    <p>Detailed log of forensic and clinical cases registered in the system</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.print()"><i data-feather="printer"></i> Print Daily Report</button>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Month / Year</th>
-                        <th>Case Type Category</th>
-                        <th>Total Registered Cases</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in cases_by_month %}
-                    <tr>
-                        <td>{{ row.month_year }}</td>
-                        <td>{{ row.case_type }}</td>
-                        <td><span class="badge blue">{{ row.total_cases }}</span></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" style="text-align: center; color: var(--text-secondary);">No monthly data generated yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Case ID</th>
+                            <th>Patient Name</th>
+                            <th>NIC / Passport</th>
+                            <th>Case Category</th>
+                            <th>Police Station</th>
+                            <th>Registered Date</th>
+                            <th>Assigned Officer</th>
+                            <th>Current Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in daily_cases %}
+                        <tr>
+                            <td><strong>#CASE-{{ case.case_id }}</strong></td>
+                            <td>{{ case.patient_name }}</td>
+                            <td><code>{{ case.nic_passport }}</code></td>
+                            <td>{{ case.case_type }}</td>
+                            <td>{{ case.police_station or 'N/A' }}</td>
+                            <td>{{ case.opened_at.strftime('%Y-%m-%d %H:%M') if case.opened_at else 'N/A' }}</td>
+                            <td>{{ case.staff_name }}</td>
+                            <td>
+                                <span class="badge {% if case.status_name == 'Closed' %}green{% elif case.status_name == 'Open' %}blue{% else %}yellow{% endif %}">
+                                    {{ case.status_name }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-secondary);">No daily cases logged today.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Monthly Report -->
+        <div id="report-monthly" class="report-section">
+            <div class="report-header-bar">
+                <div class="report-title-text">
+                    <h2><i data-feather="bar-chart-2"></i> Monthly Case Aggregates (View: CasesByMonth)</h2>
+                    <p>Monthly aggregate totals categorised by forensic case classification</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.print()"><i data-feather="printer"></i> Print Monthly Report</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month / Year</th>
+                            <th>Case Type Category</th>
+                            <th>Total Registered Cases</th>
+                            <th>Monthly Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in cases_by_month %}
+                        <tr>
+                            <td><strong>{{ row.month_year }}</strong></td>
+                            <td>{{ row.case_type }}</td>
+                            <td><span class="badge blue" style="font-size: 1rem; font-weight: 700;">{{ row.total_cases }}</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="flex: 1; background: #fed7aa; height: 8px; border-radius: 4px;">
+                                        <div style="width: {{ (row.total_cases * 15) | min(100) }}%; background: #ea580c; height: 100%; border-radius: 4px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; color: #7c2d12;">Active</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-secondary);">No monthly aggregate records available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Pending Cases Report -->
+        <div id="report-pending" class="report-section">
+            <div class="report-header-bar">
+                <div class="report-title-text">
+                    <h2><i data-feather="clock"></i> Pending Forensic Investigations Report</h2>
+                    <p>Overview of active cases requiring JMO action, MLEF completion, or lab results</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.print()"><i data-feather="printer"></i> Print Pending Cases</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Case ID</th>
+                            <th>Patient Name</th>
+                            <th>Category</th>
+                            <th>Police Station</th>
+                            <th>Pending Status</th>
+                            <th>Assigned Officer</th>
+                            <th>Days Pending</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pending_cases %}
+                        <tr>
+                            <td><strong>#CASE-{{ p.case_id }}</strong></td>
+                            <td>{{ p.patient_name }}</td>
+                            <td>{{ p.case_type }}</td>
+                            <td>{{ p.police_station or 'N/A' }}</td>
+                            <td><span class="badge yellow">{{ p.status_name }}</span></td>
+                            <td>{{ p.staff_name }}</td>
+                            <td>
+                                <span class="badge {% if p.days_pending > 10 %}red{% else %}blue{% endif %}">
+                                    {{ p.days_pending }} Day(s)
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary);">No pending cases at this time.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. Court Report -->
+        <div id="report-court" class="report-section">
+            <div class="report-header-bar">
+                <div class="report-title-text">
+                    <h2><i data-feather="file-text"></i> Court Report & Legal Submissions</h2>
+                    <p>Status of Medico-Legal Examination Forms (MLEF) and Postmortem Reports (PMR) issued to courts</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.print()"><i data-feather="printer"></i> Print Court Report</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Case ID</th>
+                            <th>Patient Name</th>
+                            <th>Report Type</th>
+                            <th>Court Reference / Ref No</th>
+                            <th>Submitted By JMO/MO</th>
+                            <th>Submission Date</th>
+                            <th>Report Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cr in court_reports_list %}
+                        <tr>
+                            <td><strong>#REP-{{ cr.report_id }}</strong></td>
+                            <td>#CASE-{{ cr.case_id }}</td>
+                            <td>{{ cr.patient_name }}</td>
+                            <td><span class="badge blue">{{ cr.report_type }}</span></td>
+                            <td><code>{{ cr.court_ref or 'Pending Ref' }}</code></td>
+                            <td>{{ cr.submitted_by }}</td>
+                            <td>{{ cr.submission_date or 'Not Submitted' }}</td>
+                            <td>
+                                <span class="badge {% if cr.report_status == 'Submitted' or cr.report_status == 'Acknowledged' %}green{% elif cr.report_status == 'Draft' %}yellow{% else %}red{% endif %}">
+                                    {{ cr.report_status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-secondary);">No court reports logged.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 5. Statistical Report -->
+        <div id="report-stats" class="report-section">
+            <div class="report-header-bar">
+                <div class="report-title-text">
+                    <h2><i data-feather="pie-chart"></i> Department Statistical Analytics & Overview</h2>
+                    <p>Quantitative summary of department performance metrics and case distribution</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.print()"><i data-feather="printer"></i> Print Statistics</button>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val">{{ stats.total_cases }}</div>
+                    <div class="stat-lbl">Total Registered Cases</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" style="color: #ea580c;">{{ stats.pending_count }}</div>
+                    <div class="stat-lbl">Pending & Active Cases</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" style="color: #16a34a;">{{ stats.closed_count }}</div>
+                    <div class="stat-lbl">Completed Cases</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" style="color: #2563eb;">{{ stats.court_count }}</div>
+                    <div class="stat-lbl">Issued Court Reports</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title"><i data-feather="pie-chart"></i> Case Type Distribution Breakdown</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Case Classification</th>
+                            <th>Total Volume</th>
+                            <th>Percentage of Department Load</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stats.type_stats %}
+                        <tr>
+                            <td><strong>{{ item.case_type }}</strong></td>
+                            <td><span class="badge blue">{{ item.count }}</span></td>
+                            <td>
+                                {% set pct = ((item.count / stats.total_cases) * 100) | round(1) if stats.total_cases > 0 else 0 %}
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="flex: 1; background: #fee2e2; height: 10px; border-radius: 5px;">
+                                        <div style="width: {{ pct }}%; background: #ea580c; height: 100%; border-radius: 5px;"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: #9a3412;">{{ pct }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-secondary);">No statistics calculated.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
-    <script>feather.replace()</script>
+
+    <script>
+        feather.replace();
+
+        function switchReport(reportKey) {
+            // Hide all report sections
+            document.querySelectorAll('.report-section').forEach(sec => sec.classList.remove('active'));
+            // Deactivate all tab buttons
+            document.querySelectorAll('.report-tab').forEach(btn => btn.classList.remove('active'));
+            
+            // Show target report section
+            const targetSection = document.getElementById('report-' + reportKey);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Activate clicked tab button
+            event.currentTarget.classList.add('active');
+        }
+    </script>
 </body>
 </html>
