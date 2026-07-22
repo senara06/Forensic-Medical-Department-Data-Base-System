@@ -98,24 +98,25 @@ a { text-decoration: none; color: inherit; }
 /* ============================================================
    LOGIN PAGE (LIGHT MODE)
    ============================================================ */
-body.login-body {
+.login-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 20% 40%, rgba(194, 65, 12, 0.08) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 60%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
-              var(--bg-dark);
+  background: url('../img/forensic_bg.jpg') no-repeat center center fixed;
+  background-size: cover;
   min-height: 100vh;
 }
 
 .login-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-lg);
   padding: 2.5rem 2.5rem 2rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: var(--shadow-lg), 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-lg), 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .login-logo {
