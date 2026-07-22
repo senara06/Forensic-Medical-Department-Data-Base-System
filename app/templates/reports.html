@@ -226,29 +226,28 @@
                     <thead>
                         <tr>
                             <th>Month / Year</th>
-                            <th>Case Type Category</th>
-                            <th>Total Registered Cases</th>
-                            <th>Monthly Share</th>
+                            <th>Total Cases</th>
+                            <th>Clinical Cases</th>
+                            <th>Postmortem Cases</th>
+                            <th>Investigating</th>
+                            <th>MLEF Pending</th>
+                            <th>Closed Cases</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for row in cases_by_month %}
                         <tr>
-                            <td><strong>{{ row.month_year }}</strong></td>
-                            <td>{{ row.case_type }}</td>
-                            <td><span class="badge blue" style="font-size: 1rem; font-weight: 700;">{{ row.total_cases }}</span></td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div style="flex: 1; background: #fed7aa; height: 8px; border-radius: 4px;">
-                                        <div style="width: {{ (row.total_cases * 15) | min(100) }}%; background: #ea580c; height: 100%; border-radius: 4px;"></div>
-                                    </div>
-                                    <span style="font-size: 0.8rem; color: #7c2d12;">Active</span>
-                                </div>
-                            </td>
+                            <td><strong>{{ row.month_label }}</strong></td>
+                            <td><span class="badge blue" style="font-size: 0.95rem; font-weight: 700;">{{ row.total_cases }}</span></td>
+                            <td>{{ row.clinical_cases }}</td>
+                            <td>{{ row.postmortem_cases }}</td>
+                            <td><span class="badge yellow">{{ row.investigating_cases }}</span></td>
+                            <td><span class="badge red">{{ row.mlef_pending_cases }}</span></td>
+                            <td><span class="badge green">{{ row.closed_cases }}</span></td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-secondary);">No monthly aggregate records available.</td>
+                            <td colspan="7" style="text-align: center; color: var(--text-secondary);">No monthly aggregate records available.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -503,7 +503,7 @@ def reports():
     cursor = conn.cursor(dictionary=True)
     
     # 1. Monthly Aggregate Report
-    cursor.execute("SELECT * FROM CasesByMonth ORDER BY month_year DESC")
+    cursor.execute("SELECT * FROM CasesByMonth ORDER BY case_year DESC, case_month DESC")
     cases_by_month = cursor.fetchall()
     
     # 2. Daily Case Report (All cases ordered by newest opened_at)
